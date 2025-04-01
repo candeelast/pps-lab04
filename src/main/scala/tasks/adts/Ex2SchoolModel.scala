@@ -111,21 +111,25 @@ object SchoolModel:
        */
       def hasCourse(name: String): Boolean
   object BasicSchoolModule extends SchoolModule:
-    override type School = Nothing
-    override type Teacher = Nothing
-    override type Course = Nothing
+    case class s(courses: Sequence[String], teachers: Sequence[String], teachersToCourse: Sequence[(String,String)])
 
-    def teacher(name: String): Teacher = ???
-    def course(name: String): Course = ???
-    def emptySchool: School = ???
+    override type School = s
+    override type Teacher = String
+    override type Course = String
+
+    def teacher(name: String): Teacher = name
+    def course(name: String): Course = name
+    def emptySchool: School = s(Sequence.Nil(), Sequence.Nil(), Sequence.Nil())
 
     extension (school: School)
-      def courses: Sequence[String] = ???
-      def teachers: Sequence[String] = ???
-      def setTeacherToCourse(teacher: Teacher, course: Course): School = ???
-      def coursesOfATeacher(teacher: Teacher): Sequence[Course] = ???
-      def hasTeacher(name: String): Boolean = ???
-      def hasCourse(name: String): Boolean = ???
+      def courses: Sequence[String] = school.courses
+      def teachers: Sequence[String] = school.teachers
+      def setTeacherToCourse(teacher: Teacher, course: Course): School =
+        s(Sequence.Cons[String](course, school.courses), Sequence.Cons[String](teacher, school.teachers),  Sequence.Cons[(String, String)]((teacher, course), school.teachersToCourse))
+      def coursesOfATeacher(teacher: Teacher): Sequence[Course] =
+        school.teachersToCourse.filter { case (t, _) => t==teacher}.map { case (_, course) => course }
+      def hasTeacher(name: String): Boolean = !{ school.teachers.filter(_ == name) == Sequence.Nil()}
+      def hasCourse(name: String): Boolean = !{ school.courses.filter(_ == name) == Sequence.Nil()}
 @main def examples(): Unit =
   import SchoolModel.BasicSchoolModule.*
   val school = emptySchool
